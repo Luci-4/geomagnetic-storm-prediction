@@ -27,16 +27,22 @@ def create_classification_dataset():
             continue
 
         cme_analysis = get_the_most_acurate_analysis(cme_analyses)
+        linkedEvents = cme["linkedEvents"]
         x = [
-            cme_analysis["latitude"],
-            cme_analysis["longitude"],
+
             cme_analysis["halfAngle"],
+            cme_analysis["speed"],
         ]
 
         if None in x:
             continue
-        y = cme_analysis["type"]
-
+        # y = cme_analysis["type"]
+        if linkedEvents is None:
+            y = "no"
+        elif [i for i in linkedEvents if "SEP" in i["activityID"] or "IPS" in i["activityID"]]:
+            y = "yes"
+        else:
+            y = "no"
         X.append(x)
         Y.append(y)
     return X, Y
@@ -68,7 +74,8 @@ def create_regression_dataset():
 
 
 def create_dataframe(X, Y):
-    df = pd.DataFrame(X, columns=['latitude', 'longitude', 'halfAngle'])
+
+    df = pd.DataFrame(X, columns=['linkedEvents', 'halfAngle'])
     df['target'] = Y
     return df
 
@@ -86,5 +93,5 @@ def create_and_load_regression_to_csv():
     df.to_csv("dataset_regression.csv", index=False)
 
 
-create_and_load_regression_to_csv()
+# create_and_load_regression_to_csv()
 create_and_load_classification_to_csv()
