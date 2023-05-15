@@ -23,26 +23,26 @@ def create_classification_dataset():
     Y = []
     for cme in data:
         cme_analyses = cme["cmeAnalyses"]
+
         if cme_analyses is None:
             continue
 
         cme_analysis = get_the_most_acurate_analysis(cme_analyses)
-        linkedEvents = cme["linkedEvents"]
-        x = [
+        enlilList = cme_analysis.get("enlilList", None)
 
+        if not enlilList:
+            continue
+
+        enlilList_elem = enlilList[0]
+
+        x = [
+            cme_analysis["longitude"],
             cme_analysis["halfAngle"],
-            cme_analysis["speed"],
         ]
 
         if None in x:
             continue
-        # y = cme_analysis["type"]
-        if linkedEvents is None:
-            y = "no"
-        elif [i for i in linkedEvents if "SEP" in i["activityID"] or "IPS" in i["activityID"]]:
-            y = "yes"
-        else:
-            y = "no"
+        y = int(enlilList_elem["isEarthGB"])
         X.append(x)
         Y.append(y)
     return X, Y
@@ -60,13 +60,20 @@ def create_regression_dataset():
         cme_analysis = get_the_most_acurate_analysis(cme_analyses)
 
         x = [
-            cme_analysis["latitude"],
-            cme_analysis["longitude"],
             cme_analysis["halfAngle"],
+            cme_analysis["speed"],
         ]
         if None in x:
             continue
-        y = cme_analysis["speed"]
+
+
+        linkedEvents = cme["linkedEvents"]
+        if linkedEvents is None:
+            y = 0
+        elif (linked:=[i for i in linkedEvents if "SEP" in i["activityID"] or "IPS" in i["activityID"]]):
+            y = len(linked)
+        else:
+            y = 0
 
         X.append(x)
         Y.append(y)
@@ -74,8 +81,7 @@ def create_regression_dataset():
 
 
 def create_dataframe(X, Y):
-
-    df = pd.DataFrame(X, columns=['linkedEvents', 'halfAngle'])
+    df = pd.DataFrame(X, columns=['longitude', 'halfAngle'])
     df['target'] = Y
     return df
 

@@ -34,7 +34,7 @@ def apply_pca_to_dataset(dataset):
 
 
 df = pd.read_csv("dataset_classification.csv")
-X = df.drop(columns=['target', 'halfAngle']).values
+X = df.drop(columns=['target', "latitude"]).values
 y = df['target'].values
 print(X)
 dataset = Bunch(data=X, target=y)
