@@ -13,7 +13,7 @@ y = df['target'].values
 colors_map = {e: i+1 for i, e in enumerate(list(set(list(y))))}
 
 # plt.scatter(preprocessing.normalize(X[:, 1].reshape(1, -1), norm="max"), preprocessing.normalize(X[:, 0].reshape(1, -1), norm="max"), c=[colors_map[e] for e in list(y)])
-plt.scatter(X[:, 1], X[:, 0], c=[colors_map[e] for e in list(y)])
+plt.scatter(X[:, 1], X[:, 0], c=[2-colors_map[e] for e in list(y)])
 plt.show()
 exit()
 

@@ -35,14 +35,19 @@ def create_classification_dataset():
 
         enlilList_elem = enlilList[0]
 
+        if enlilList_elem["isEarthGB"]:
+            print(cme["linkedEvents"])
+
         x = [
+            cme_analysis["latitude"],
             cme_analysis["longitude"],
             cme_analysis["halfAngle"],
+            cme_analysis["speed"]
         ]
 
         if None in x:
             continue
-        y = int(enlilList_elem["isEarthGB"])
+        y = int(bool(cme["linkedEvents"]) and any([("GST" in i["activityID"]) for i in cme["linkedEvents"]]))
         X.append(x)
         Y.append(y)
     return X, Y
@@ -81,7 +86,7 @@ def create_regression_dataset():
 
 
 def create_dataframe(X, Y):
-    df = pd.DataFrame(X, columns=['longitude', 'halfAngle'])
+    df = pd.DataFrame(X, columns=['latitude', 'longitude', 'halfAngle', 'speed'])
     df['target'] = Y
     return df
 
