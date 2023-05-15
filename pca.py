@@ -18,7 +18,7 @@ def apply_pca_to_dataset(dataset):
     ax.scatter(
         X_reduced[:, 0],
         X_reduced[:, 1],
-        c=[colors_map[e] for e in list(y)],
+        c=[len(list(y))-colors_map[e] for e in list(y)],
         cmap=plt.cm.Set1,
         edgecolor="k",
         s=40,

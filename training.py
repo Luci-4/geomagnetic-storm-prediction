@@ -8,8 +8,8 @@ import pandas as pd
 
 df = pd.read_csv("dataset_classification.csv")
 
-X = preprocessing.normalize(df.drop(columns=['target', "latitude", "halfAngle"]).values, norm="max")
-X = df.drop(columns=['target', 'speed', 'halfAngle']).values
+X = preprocessing.normalize(df.drop(columns=['target', "latitude"]).values, norm="max")
+# X = df.drop(columns=['target', 'latitude']).values
 y = df['target'].values
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
