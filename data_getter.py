@@ -12,14 +12,11 @@ page_size = 500
 # CME
 
 
-def dump_to_json(endpoint, filename=None):
+def dump_to_json(endpoint, filename):
 
     url = f"{base_url}{endpoint.upper()}?api_key={api_key}&startDate={start_time}&page_size={page_size}"
     response = requests.get(url)
-    print(url)
     data = json.loads(response.text)
-    if filename is None:
-        filename = f"{endpoint.lower()}_data.json"
     with open(filename, "w") as f:
         json.dump(data, f, indent=4)
 
