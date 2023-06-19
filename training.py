@@ -1,5 +1,4 @@
 import numpy as np
-
 from sklearn import preprocessing
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
@@ -13,6 +12,9 @@ from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.neural_network import MLPClassifier
 
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix, classification_report
+
+from imblearn.over_sampling import RandomOverSampler
 from pprint import pprint
 
 from joblib import dump as joblib_dump, load as joblib_load
@@ -23,8 +25,12 @@ df = pd.read_csv("dataset_classification.csv")
 X = preprocessing.normalize(df.drop(columns=['target', 'speed']).values, norm="max")
 # X = df.drop(columns=['target', 'latitude']).values
 y = df['target'].values
+labels = [str(i) for i in list(set(y))]
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+ros = RandomOverSampler(random_state=0)
+X, y = ros.fit_resample(X, y)
+
+ros = RandomOverSampler(random_state=0)
 
 classifiers = [
         SVC,
@@ -45,6 +51,8 @@ classifiers_names = [
 
 
 def train(classifier, classifier_name):
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
     classifier_obj = classifier()
 
     classifier_obj.fit(X_train, y_train)
@@ -54,7 +62,12 @@ def train(classifier, classifier_name):
 
     train_accuracy = classifier_obj.score(X_train, y_train)
     test_accuracy = classifier_obj.score(X_test, y_test)
-    return classifier_obj, train_accuracy, test_accuracy
+    recall = recall_score(y_test, y_test_pred)
+    f1 = f1_score(y_test, y_test_pred)
+    confusion_mx = confusion_matrix(y_test, y_test_pred)
+    print(train_accuracy, test_accuracy, recall, f1, confusion_mx) 
+    report = classification_report(y_test, y_test_pred, target_names=labels)
+    return classifier_obj, train_accuracy, test_accuracy, recall, f1, confusion_mx, report
 
 
 def train_and_save():
@@ -62,36 +75,53 @@ def train_and_save():
     results = []
     for classifier_cls, classifier_name in zip(classifiers, classifiers_names):
 
-        classifier, train_accuracy, test_accuracy = train(classifier_cls, classifier_name)
-        # print(30*"-")
-        # print(type(classifier))
-        # print(30*"-")
-        # print(classifier.feature_importances_)
+        classifier, train_accuracy, test_accuracy, recall, f1, confusion_mx, report = train(classifier_cls, classifier_name)
         results.append((
                 classifier,
                 classifier_name,
                 train_accuracy,
-                test_accuracy
+                test_accuracy,
+                recall,
+                f1,
+                confusion_mx,
+                report
+
             ))
 
     results.sort(reverse=True, key=lambda x: x[3])
     # pprint(results[0][1:])
-    classifier, classifier_name, train_accuracy, test_accuracy= results[0]
+    # classifier, classifier_name, train_accuracy, test_accuracy = results[0]
+    for classifier, classifier_name, train_accuracy, test_accuracy, recall, f1, confusion_mx, report in results:
 
-    try:
-        previous_classfier, previous_test_accuracy = joblib_load("gst_prediction.joblib")
-    except FileNotFoundError:
-        previous_classfier = None
-        previous_test_accuracy = 0
+        classifiers_obj = joblib_load("gst_models.joblib")
+        previous_classfier, previous_test_accuracy, previous_train_accuracy, previous_recall, previous_f1, previous_confusion_mx, previous_report = classifiers_obj.get(classifier_name, (None, 0, 0, 0, 0, [[-1000, -1000], [-1000, -1000]], {}))
+        if test_accuracy > previous_test_accuracy:
+            classifiers_obj[classifier_name] = (classifier, test_accuracy, train_accuracy, recall, f1, confusion_mx, report)
+            # pprint(classifiers_obj)
 
-    # print(f"{test_accuracy =} > {previous_test_accuracy =}")
-    if test_accuracy > previous_test_accuracy:
-        # print(classifier)
-        obj = (classifier, test_accuracy)
-        joblib_dump(obj, "gst_prediction.joblib")
+            joblib_dump(classifiers_obj, "gst_models.joblib")
 
-for _ in range(30):
-    train_and_save()
+
+
+# joblib_dump({}, "gst_models.joblib")
+# for _ in range(2000):
+#     train_and_save()
+obj_ = joblib_load("gst_models.joblib")
+print(obj_)
+items = [k for k in obj_.items()]
+items.sort(key=lambda x: x[1][1])
+
+for k, (obj, test_, train_, recall_, f1_, confusion_matrix_, report_) in obj_.items():
+    print(k)
+    print(test_)
+    print(train_)
+    print(recall_)
+    print(f1_)
+    print(confusion_matrix_)
+    print(report_)
+    print(30*"-")
+    print()
+
 # for (classifier, classifier_name, train_accuracy, test_accuracy) in results:
 #     print(classifier_name)
 #     print("Training Accuracy:", train_accuracy)
