@@ -1,6 +1,9 @@
 import json
 import pandas as pd
 from datetime import datetime
+import statistics
+
+from imblearn.over_sampling import RandomOverSampler
 
 
 def get_data_from_json(filename):
@@ -44,14 +47,6 @@ def get_cme_data_point(cme):
         return
 
     cme_analysis = get_the_most_acurate_analysis(cme_analyses)
-    enlilList = cme_analysis.get("enlilList", None)
-
-    if not enlilList:
-        return
-
-    # enlilList_elem = enlilList[0]
-    # if enlilList_elem["isEarthGB"]:
-    #     print(cme["linkedEvents"])
 
     x = [
         cme_analysis["latitude"],
@@ -75,20 +70,26 @@ def create_classification_dataset(source_json_filename):
     column_labels = ['latitude', 'longitude', 'halfAngle']
     for cme in data:
         data_point = get_cme_data_point(cme)
+
         if data_point is None:
             continue
         x, y = data_point
         X.append(x)
         Y.append(y)
 
+    ros = RandomOverSampler(random_state=0)
+
+    X, Y = ros.fit_resample(X, Y)
     df = pd.DataFrame(X, columns=column_labels)
     df['target'] = Y
     return df
 
 
 def create_and_load_classification_to_csv():
-    df = create_classification_dataset("current_cme_data.json")
-    df.to_csv("new_dataset_classification.csv", index=False)
+    df = create_classification_dataset("cme_data.json")
+    df.to_csv("dataset_classification.csv", index=False)
 
 
 create_and_load_classification_to_csv()
+
+

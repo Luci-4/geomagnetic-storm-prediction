@@ -7,9 +7,8 @@ base_url = "https://api.nasa.gov/DONKI/"
 env_vars = dotenv_values()
 api_key = env_vars["NASA_API_KEY"]
 
-start_time = "2023-05-09"
+start_time = "2010-01-01"
 page_size = 500
-# CME
 
 
 def dump_to_json(endpoint, filename):

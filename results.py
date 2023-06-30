@@ -8,8 +8,6 @@ from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from sklearn.model_selection import train_test_split
 
 obj = joblib_load("gst_models.joblib")
-previous_classfier, previous_test_accuracy = joblib_load("gst_prediction.joblib")
-print(previous_classfier, previous_test_accuracy)
 
 
 df = pd.read_csv("new_dataset_classification.csv")
@@ -17,12 +15,10 @@ df = pd.read_csv("new_dataset_classification.csv")
 X = preprocessing.normalize(df.drop(columns=['target']).values, norm="max")
 y = df['target'].values
 
-import pandas as pd
 
 df = pd.read_csv("dataset_classification.csv")
 
-X = preprocessing.normalize(df.drop(columns=['target', 'speed']).values, norm="max")
-# X = df.drop(columns=['target', 'latitude']).values
+X = preprocessing.normalize(df.drop(columns=['target']).values, norm="max")
 y = df['target'].values
 labels = [str(i) for i in list(set(y))]
 
@@ -30,20 +26,19 @@ labels = [str(i) for i in list(set(y))]
 
 for key, stuff in obj.items():
     previous_classfier = stuff[0]
-
-    # y_test_pred = previous_classfier.predict(X_test)
-    # y_pred = previous_classfier.predict(X)
+    print(key)
+    print(stuff[1])
+    print(stuff[2])
     cm = stuff[-2]
+    print(cm)
+    print(stuff[-1])
+    print(30*"_")
 
-    # print(cm)
     disp = ConfusionMatrixDisplay(confusion_matrix=cm,
                               display_labels=labels)
-    # disp.plot()
+    disp.plot()
     filename = f"{key}-confusion-matrix.png"
-    print(filename)
-    continue
     # plt.savefig(filename)
     # plt.show()
 
-    # classification_report(y_test, Y_pred, target_names=target_names)
 

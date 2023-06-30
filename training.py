@@ -1,6 +1,4 @@
-import numpy as np
 from sklearn import preprocessing
-import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
@@ -8,29 +6,22 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.neural_network import MLPClassifier
 
 from sklearn.metrics import confusion_matrix
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix, classification_report
+from sklearn.metrics import accuracy_score, recall_score, f1_score, confusion_matrix, classification_report
 
-from imblearn.over_sampling import RandomOverSampler
-from pprint import pprint
 
 from joblib import dump as joblib_dump, load as joblib_load
 import pandas as pd
 
+# df = pd.read_csv("dataset_classification.csv")
 df = pd.read_csv("dataset_classification.csv")
 
-X = preprocessing.normalize(df.drop(columns=['target', 'speed']).values, norm="max")
+X = preprocessing.normalize(df.drop(columns=['target']).values, norm="max")
 # X = df.drop(columns=['target', 'latitude']).values
 y = df['target'].values
 labels = [str(i) for i in list(set(y))]
 
-ros = RandomOverSampler(random_state=0)
-X, y = ros.fit_resample(X, y)
-
-ros = RandomOverSampler(random_state=0)
 
 classifiers = [
         SVC,
@@ -102,12 +93,12 @@ def train_and_save():
             joblib_dump(classifiers_obj, "gst_models.joblib")
 
 
+joblib_dump({}, "gst_models.joblib")
 
-# joblib_dump({}, "gst_models.joblib")
-# for _ in range(2000):
-#     train_and_save()
+
+for _ in range(100):
+    train_and_save()
 obj_ = joblib_load("gst_models.joblib")
-print(obj_)
 items = [k for k in obj_.items()]
 items.sort(key=lambda x: x[1][1])
 
@@ -121,10 +112,3 @@ for k, (obj, test_, train_, recall_, f1_, confusion_matrix_, report_) in obj_.it
     print(report_)
     print(30*"-")
     print()
-
-# for (classifier, classifier_name, train_accuracy, test_accuracy) in results:
-#     print(classifier_name)
-#     print("Training Accuracy:", train_accuracy)
-#     print("Testing Accuracy:", test_accuracy)
-#     print(30*"-")
-#     print()
